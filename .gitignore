@@ -28,10 +28,12 @@ out/
 .vscode/
 .idea/
 .cursor/
-.claude/
-CLAUDE.md
 .DS_Store
 Thumbs.db
+
+# Claude Code: commiteamos CLAUDE.md y .claude/settings.json,
+# pero NO los overrides locales del usuario
+.claude/settings.local.json
 
 # Docker
 *.pid
