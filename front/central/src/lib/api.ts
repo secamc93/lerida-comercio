@@ -20,6 +20,7 @@ export async function api<T = unknown>(
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "X-Client-Type": "api",
     ...(opts.headers as Record<string, string>),
   };
   if (opts.auth !== false) {

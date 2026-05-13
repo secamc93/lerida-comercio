@@ -50,26 +50,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    api<MeResponse>("/api/v1/auth/me")
+    const savedRole = (typeof window !== "undefined" && localStorage.getItem("lerida_role")) as Rol | null;
+    api<{ success: boolean; data: { user_id: number; email: string; roles: string[] | null } }>(
+      "/api/v1/auth/verify"
+    )
       .then((d) => {
-        setRole(d.role as Rol);
-        setUser(d.user);
+        const role: Rol = savedRole === "admin" || savedRole === "jugador" ? savedRole : "jugador";
+        setRole(role);
+        setUser({ id: d.data.user_id, username: d.data.email, nombre: d.data.email });
       })
       .catch(() => {
         setToken(null);
+        localStorage.removeItem("lerida_role");
         setRole("invitado");
       })
       .finally(() => setLoading(false));
   }, []);
 
-  async function loginAdmin(username: string, password: string) {
-    const d = await api<{ token: string; user: MeResponse["user"] }>(
-      "/api/v1/auth/login/admin",
-      { method: "POST", body: JSON.stringify({ username, password }), auth: false }
-    );
-    setToken(d.token);
+  async function loginAdmin(email: string, password: string) {
+    const r = await api<{
+      success: boolean;
+      data: { token: string; user: { id: number; name: string; email: string }; is_super_admin: boolean };
+    }>("/api/v1/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+      auth: false,
+    });
+    setToken(r.data.token);
     setRole("admin");
-    setUser(d.user);
+    localStorage.setItem("lerida_role", "admin");
+    setUser({ id: r.data.user.id, username: r.data.user.email, nombre: r.data.user.name });
     setInvitadoChosen(false);
     localStorage.removeItem("lerida_invitado");
   }
@@ -112,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setInvitadoChosen(false);
     localStorage.removeItem("lerida_invitado");
+    localStorage.removeItem("lerida_role");
   }
 
   return (

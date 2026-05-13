@@ -13,7 +13,7 @@ export default function LoginGate({ children }: { children: React.ReactNode }) {
   const [busy, setBusy] = useState(false);
 
   // Form states
-  const [adminUser, setAdminUser] = useState("admin");
+  const [adminUser, setAdminUser] = useState("admin@lerida.local");
   const [adminPw, setAdminPw] = useState("");
   const [jugUser, setJugUser] = useState("");
   const [jugPw, setJugPw] = useState("");
@@ -108,9 +108,9 @@ export default function LoginGate({ children }: { children: React.ReactNode }) {
         {step === "admin" && (
           <>
             <h2 className="text-2xl font-bold text-yellow-400 text-center mb-2">🔐 Administrador</h2>
-            <p className="text-emerald-100 text-center mb-6 text-sm">Usuario por defecto: <code>admin / admin123</code></p>
+            <p className="text-emerald-100 text-center mb-6 text-sm">Por defecto: <code>admin@lerida.local / admin123</code></p>
             <input className="w-full p-3 rounded-lg bg-black/30 border-2 border-white/20 mb-3 focus:border-yellow-400 outline-none"
-              placeholder="Usuario" value={adminUser} onChange={(e) => setAdminUser(e.target.value)} autoComplete="off" />
+              type="email" placeholder="Email" value={adminUser} onChange={(e) => setAdminUser(e.target.value)} autoComplete="off" />
             <input className="w-full p-3 rounded-lg bg-black/30 border-2 border-white/20 mb-3 focus:border-yellow-400 outline-none"
               type="password" placeholder="Contraseña" value={adminPw} onChange={(e) => setAdminPw(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAdmin()} autoComplete="off" />
