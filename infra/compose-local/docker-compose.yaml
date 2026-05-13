@@ -2,7 +2,7 @@ name: lerida-comercio-local
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgis/postgis:15-3.4-alpine
     container_name: lerida-postgres
     restart: unless-stopped
     environment:
@@ -37,9 +37,52 @@ services:
     networks:
       - lerida-net
 
+  # MinIO: almacenamiento S3-compatible para desarrollo local.
+  # API S3: http://localhost:9000  · Consola web: http://localhost:9001
+  minio:
+    image: minio/minio:latest
+    container_name: lerida-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: lerida_admin
+      MINIO_ROOT_PASSWORD: lerida_minio_2026
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - lerida-net
+
+  # Crea automáticamente el bucket `lerida-uploads` al arrancar MinIO
+  minio-init:
+    image: minio/mc:latest
+    container_name: lerida-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+      mc alias set local http://minio:9000 lerida_admin lerida_minio_2026 &&
+      mc mb --ignore-existing local/lerida-uploads &&
+      mc anonymous set download local/lerida-uploads &&
+      echo '✅ Bucket lerida-uploads listo'
+      "
+    networks:
+      - lerida-net
+    restart: "no"
+
 volumes:
   postgres_data:
     name: lerida-postgres-data
+  minio_data:
+    name: lerida-minio-data
 
 networks:
   lerida-net:

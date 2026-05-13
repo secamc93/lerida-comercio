@@ -1,0 +1,149 @@
+/**
+ * Componente Modal reutilizable
+ * Usa clases globales definidas en globals.css
+ */
+
+'use client';
+
+import { ReactNode, useEffect } from 'react';
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  showCloseButton?: boolean; // NEW: Mostrar o no el botón de cerrar
+  title?: string;
+  children: ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
+  glass?: boolean; // Efecto glassmorphism
+  transparent?: boolean; // NEW: Fondo transparente sin sombra
+  zIndex?: number; // Z-index personalizado para el modal y backdrop
+}
+
+const sizeClasses = {
+  sm: 'max-w-sm w-[95vw] sm:w-full',
+  md: 'max-w-md w-[95vw] sm:w-full',
+  lg: 'max-w-lg w-[95vw] sm:w-full',
+  xl: 'max-w-xl w-[95vw] sm:w-full',
+  '2xl': 'max-w-2xl w-[95vw] sm:w-full',
+  '4xl': 'max-w-4xl w-[95vw] sm:w-full',
+  '5xl': 'max-w-5xl w-[95vw] sm:w-full',
+  '6xl': 'max-w-6xl w-[95vw] sm:w-full',
+  '7xl': 'max-w-7xl w-[95vw] sm:w-full',
+  'full': 'max-w-[95vw] w-[95vw]',
+};
+
+export function Modal({ isOpen, onClose, showCloseButton = true, title, children, size = 'md', glass = false, transparent = false, zIndex = 50 }: ModalProps) {
+  console.log('🔧 Modal - isOpen:', isOpen, 'title:', title, 'size:', size);
+
+  // Cerrar con ESC
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
+
+  // Prevenir scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const backdropZIndex = zIndex - 10;
+  const modalZIndex = zIndex;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="modal-backdrop" style={{ zIndex: backdropZIndex }} onClick={onClose} />
+
+      {/* Modal */}
+      <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: modalZIndex }}>
+        {size === 'full' ? (
+          <div
+            className="flex flex-col overflow-hidden bg-white dark:bg-gray-800"
+            style={{
+              borderRadius: '32px',
+              width: '90vw',
+              height: '90vh',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+            }}
+          >
+            {/* Header for full screen */}
+            {title && (
+              <div className="flex items-center justify-between px-8 py-6 border-b" style={{ backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)' }}>
+                <h2 className="text-2xl font-bold text-white">{title}</h2>
+                {showCloseButton && (
+                  <button
+                    onClick={onClose}
+                    className="text-white hover:opacity-80 transition-opacity p-2 rounded-lg"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto">
+              {children}
+            </div>
+          </div>
+        ) : (
+          <div
+            className={`${transparent ? 'bg-transparent shadow-none border-none' : (size === 'sm' || size === 'md' ? (glass ? 'modal-glass' : 'modal-content') : 'bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8')} max-h-[90vh] overflow-hidden flex flex-col`}
+            style={
+              size === 'sm' || size === 'md'
+                ? {
+                  maxWidth: size === 'sm' ? '28rem' : '32rem',
+                  width: '95vw'
+                }
+                : size === '5xl' || size === '6xl' || size === '7xl'
+                  ? {
+                    width: size === '5xl' ? '90vw' : size === '6xl' ? '95vw' : '98vw',
+                    maxWidth: size === '5xl' ? '90vw' : size === '6xl' ? '95vw' : '98vw',
+                    minWidth: 0
+                  }
+                  : undefined
+            }
+          >
+            {/* Header */}
+            {title && (
+              <div className="relative mb-4 flex-shrink-0 px-6 py-4 -mx-6 -mt-6 rounded-t-2xl" style={{ backgroundColor: 'var(--color-primary)' }}>
+                <h3 className="text-xl font-bold text-center text-white">{title}</h3>
+                {showCloseButton && (
+                  <button
+                    onClick={onClose}
+                    className="absolute right-2 top-2 text-white hover:opacity-80 transition-opacity"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 sm:pr-2 -mr-1 sm:-mr-2 w-full max-w-full">{children}</div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+

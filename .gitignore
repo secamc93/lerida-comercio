@@ -23,6 +23,14 @@ out/
 .env
 .env.*
 !.env.example
+.mcp.json
+.mcp.local.json
+.gh-token
+*.gh-token
+*.pem
+*.key
+*-token
+auth-seed.md
 
 # Editors / OS
 .vscode/
@@ -41,3 +49,6 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Playwright MCP artifacts
+.playwright-mcp/

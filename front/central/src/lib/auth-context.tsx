@@ -12,6 +12,7 @@ interface AuthCtx {
   role: Rol;
   user: MeResponse["user"] | null;
   loading: boolean;
+  invitadoChosen: boolean;
   loginAdmin: (username: string, password: string) => Promise<void>;
   loginJugador: (username: string, password: string) => Promise<void>;
   registerJugador: (input: RegisterInput) => Promise<void>;
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Rol>("invitado");
   const [user, setUser] = useState<MeResponse["user"] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [invitadoChosen, setInvitadoChosen] = useState(false);
 
   useEffect(() => {
     const tok = getToken();
@@ -44,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     if (savedInvitado && !tok) {
       setRole("invitado");
+      setInvitadoChosen(true);
       setLoading(false);
       return;
     }
@@ -67,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(d.token);
     setRole("admin");
     setUser(d.user);
+    setInvitadoChosen(false);
     localStorage.removeItem("lerida_invitado");
   }
 
@@ -78,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(d.token);
     setRole("jugador");
     setUser(d.user);
+    setInvitadoChosen(false);
     localStorage.removeItem("lerida_invitado");
   }
 
@@ -89,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(d.token);
     setRole("jugador");
     setUser(d.user);
+    setInvitadoChosen(false);
     localStorage.removeItem("lerida_invitado");
   }
 
@@ -96,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setRole("invitado");
     setUser(null);
+    setInvitadoChosen(true);
     localStorage.setItem("lerida_invitado", "1");
   }
 
@@ -103,11 +110,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setRole("invitado");
     setUser(null);
+    setInvitadoChosen(false);
     localStorage.removeItem("lerida_invitado");
   }
 
   return (
-    <Ctx.Provider value={{ role, user, loading, loginAdmin, loginJugador, registerJugador, loginInvitado, logout }}>
+    <Ctx.Provider value={{ role, user, loading, invitadoChosen, loginAdmin, loginJugador, registerJugador, loginInvitado, logout }}>
       {children}
     </Ctx.Provider>
   );

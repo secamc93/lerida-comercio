@@ -7,7 +7,7 @@ import { api, Equipo } from "@/lib/api";
 type Step = "choose" | "admin" | "jugador" | "register";
 
 export default function LoginGate({ children }: { children: React.ReactNode }) {
-  const { role, loading, loginAdmin, loginJugador, registerJugador, loginInvitado } = useAuth();
+  const { role, loading, invitadoChosen, loginAdmin, loginJugador, registerJugador, loginInvitado } = useAuth();
   const [step, setStep] = useState<Step>("choose");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,8 +41,7 @@ export default function LoginGate({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  if (role !== "invitado" || (typeof window !== "undefined" && localStorage.getItem("lerida_invitado") === "1")) {
-    // Already authenticated or chose invitado: render children
+  if (role !== "invitado" || invitadoChosen) {
     return <>{children}</>;
   }
 

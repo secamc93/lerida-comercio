@@ -84,6 +84,44 @@ dev: docker-up
 	@echo "   - make run-backend  (en una terminal)"
 	@echo "   - make run-frontend (en otra terminal)"
 
+# ===== TMUX DEV ORQUESTADOR =====
+# Atajos al script ./scripts/dev-services.sh (sesión tmux 'lerida').
+# Para más comandos: ./scripts/dev-services.sh help
+up:
+	@./scripts/dev-services.sh start all
+
+down:
+	@./scripts/dev-services.sh stop all
+
+ps status:
+	@./scripts/dev-services.sh status
+
+attach:
+	@./scripts/dev-services.sh attach
+
+logs-backend:
+	@./scripts/dev-services.sh logs backend 100
+
+logs-frontend:
+	@./scripts/dev-services.sh logs frontend 100
+
+restart-backend:
+	@./scripts/dev-services.sh restart backend
+
+restart-frontend:
+	@./scripts/dev-services.sh restart frontend
+
+kill-zombies:
+	@./scripts/dev-services.sh kill-zombies
+
+ports:
+	@./scripts/dev-services.sh ports
+
+# ===== GH CLI scoped al repo (cuenta secamc93) =====
+# Uso:  eval "$(make gh-env)"   → exporta GH_TOKEN solo en tu shell actual
+gh-env:
+	@./scripts/gh-env.sh
+
 # ===== CLEAN =====
 clean:
 	rm -f back/central/central back/migration/migration
