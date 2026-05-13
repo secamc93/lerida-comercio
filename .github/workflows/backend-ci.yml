@@ -1,0 +1,89 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "back/central/**"
+      - "back/migration/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "back/central/**"
+      - "back/migration/**"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: lerida
+          POSTGRES_PASSWORD: lerida_dev_2026
+          POSTGRES_DB: lerida_comercio
+        options: >-
+          --health-cmd "pg_isready -U lerida"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+          cache-dependency-path: |
+            back/central/go.sum
+            back/migration/go.sum
+
+      - name: Build migration
+        working-directory: back/migration
+        run: go build ./...
+
+      - name: Build central
+        working-directory: back/central
+        run: go build ./...
+
+      - name: Tests central
+        working-directory: back/central
+        run: go test ./... -count=1
+
+      - name: Run migrations
+        working-directory: back/migration
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: lerida
+          DB_PASS: lerida_dev_2026
+          DB_NAME: lerida_comercio
+        run: go run cmd/main.go --seed
+
+  docker-build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./back
+          file: ./back/central/Dockerfile
+          push: false
+          tags: lerida-comercio/back-central:${{ github.sha }},lerida-comercio/back-central:latest
+
+      - name: Build migration image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./back
+          file: ./back/migration/Dockerfile
+          push: false
+          tags: lerida-comercio/migration:${{ github.sha }}

@@ -1,0 +1,41 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+back/central/central
+back/central/main
+back/migration/migration
+back/migration/main
+vendor/
+
+# Node
+node_modules/
+.next/
+out/
+.pnpm-store/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.cursor/
+.claude/
+CLAUDE.md
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+
+# Logs
+*.log
+logs/

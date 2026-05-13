@@ -1,0 +1,47 @@
+name: lerida-comercio-local
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lerida-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lerida
+      POSTGRES_PASSWORD: lerida_dev_2026
+      POSTGRES_DB: lerida_comercio
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lerida -d lerida_comercio"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - lerida-net
+
+  adminer:
+    image: adminer:latest
+    container_name: lerida-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: pepa-linha-dark
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lerida-net
+
+volumes:
+  postgres_data:
+    name: lerida-postgres-data
+
+networks:
+  lerida-net:
+    name: lerida-net
+    driver: bridge

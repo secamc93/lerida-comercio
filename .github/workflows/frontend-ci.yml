@@ -1,0 +1,56 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "front/central/**"
+      - ".github/workflows/frontend-ci.yml"
+  pull_request:
+    paths:
+      - "front/central/**"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: front/central
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: front/central/pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:3050
+        run: pnpm build
+
+  docker-build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./front/central
+          file: ./front/central/Dockerfile
+          push: false
+          tags: lerida-comercio/front-central:${{ github.sha }},lerida-comercio/front-central:latest
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=https://lerida-comercio.example.com/api

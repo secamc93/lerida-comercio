@@ -1,0 +1,31 @@
+name: Nginx CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infra/nginx/**"
+      - ".github/workflows/nginx-ci.yml"
+  pull_request:
+    paths:
+      - "infra/nginx/**"
+  workflow_dispatch:
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint nginx.conf
+        run: |
+          docker run --rm -v ${{ github.workspace }}/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro nginx:1.27-alpine nginx -t
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Build nginx image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./infra/nginx
+          push: false
+          tags: lerida-comercio/nginx:${{ github.sha }},lerida-comercio/nginx:latest
