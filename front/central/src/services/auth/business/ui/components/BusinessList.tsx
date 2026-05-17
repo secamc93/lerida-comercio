@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Alert } from '@/shared/ui/alert';
 import { Modal } from '@/shared/ui/modal';
-import { DynamicFilters, FilterOption, ActiveFilter } from '@/shared/ui';
+import { DynamicFilters, FilterOption, ActiveFilter, Pagination } from '@/shared/ui';
 import { Business, GetBusinessesParams, ConfiguredResource, BusinessConfiguredResources } from '../../domain/types';
 import { BusinessForm } from './BusinessForm';
 import {
@@ -286,10 +286,6 @@ export const BusinessList: React.FC = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Negocios</h1>
-            </div>
-
             {error && <Alert type="error" onClose={() => setError(null)}>{error}</Alert>}
 
             {/* Filtros dinámicos y Tabla */}
@@ -325,48 +321,38 @@ export const BusinessList: React.FC = () => {
                     </div>
                 </div>
                 {/* Tabla */}
-                <div className="bg-white dark:bg-gray-800 rounded-b-lg rounded-t-none shadow-sm dark:shadow-lg border border-gray-200 dark:border-gray-700 border-t-0 overflow-hidden -mt-px">
-                    <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
+                <div className="bg-white rounded-b-lg rounded-t-none shadow-sm border border-gray-200 border-t-0 overflow-hidden -mt-px">
+                    <div className="rounded-xl border border-stone-200 overflow-hidden">
+                    <table className="w-full text-sm">
+                        <thead className="bg-emerald-950 text-white">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    ID
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Logo
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Nombre
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Activo
-                                </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
-                                    Acciones
-                                </th>
+                                <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
+                                <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Logo</th>
+                                <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Nombre</th>
+                                <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Activo</th>
+                                <th className="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    <td colSpan={5} className="px-4 py-8 text-center text-stone-400">
                                         Cargando negocios...
                                     </td>
                                 </tr>
                             ) : businesses.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    <td colSpan={5} className="px-4 py-8 text-center text-stone-400">
                                         No hay negocios disponibles
                                     </td>
                                 </tr>
                             ) : (
                                 businesses.map((business) => (
-                                    <tr key={business.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    <tr key={business.id} className="border-t border-stone-100 hover:bg-stone-50 transition-colors">
+                                        <td className="px-4 py-2.5 text-stone-700">
                                             {business.id}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 py-2.5 text-stone-700">
                                             {business.logo_url ? (
                                                 <img
                                                     src={business.logo_url}
@@ -375,17 +361,17 @@ export const BusinessList: React.FC = () => {
                                                     onClick={() => setPreviewLogo({ url: business.logo_url!, name: business.name })}
                                                 />
                                             ) : (
-                                                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                                <div className="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center">
+                                                    <span className="text-sm font-medium text-stone-600">
                                                         {business.name.charAt(0).toUpperCase()}
                                                     </span>
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                        <td className="px-4 py-2.5 text-stone-700 font-medium">
                                             {business.name}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-4 py-2.5 text-stone-700">
                                             {isSuperAdmin ? (
                                                 <button
                                                     onClick={() => handleToggleBusinessActive(business)}
@@ -424,12 +410,12 @@ export const BusinessList: React.FC = () => {
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <td className="px-4 py-2.5 text-right">
                                             <div className="flex justify-end gap-2">
                                                 {isSuperAdmin && (
                                                     <button
                                                         onClick={() => handleOpenResources(business)}
-                                                        className="p-2 btn btn-tertiary rounded-md transition-colors duration-200"
+                                                        className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
                                                         title="Configurar recursos"
                                                         aria-label="Configurar recursos"
                                                     >
@@ -441,7 +427,7 @@ export const BusinessList: React.FC = () => {
                                                 )}
                                                 <button
                                                     onClick={() => { setEditingBusiness(business); setShowCreateModal(true); }}
-                                                    className="p-2 btn btn-quaternary rounded-md transition-colors duration-200"
+                                                    className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
                                                     title="Editar negocio"
                                                     aria-label="Editar negocio"
                                                 >
@@ -452,7 +438,7 @@ export const BusinessList: React.FC = () => {
                                                 {isSuperAdmin && (
                                                     <button
                                                         onClick={() => setDeleteId(business.id)}
-                                                        className="p-2 btn btn-danger rounded-md transition-colors duration-200"
+                                                        className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
                                                         title="Eliminar negocio"
                                                         aria-label="Eliminar negocio"
                                                     >
@@ -471,73 +457,15 @@ export const BusinessList: React.FC = () => {
                 </div>
 
                 {/* Paginación */}
-                {!loading && businesses.length > 0 && (
-                    <div className="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                            {/* Desktop: Full pagination */}
-                            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-700 dark:text-gray-200">
-                                        Mostrando{' '}
-                                        <span className="font-medium">
-                                            {(page - 1) * pageSize + 1}
-                                        </span>{' '}
-                                        a{' '}
-                                        <span className="font-medium">
-                                            {Math.min(page * pageSize, total)}
-                                        </span>{' '}
-                                        de <span className="font-medium">{total}</span> resultados
-                                    </p>
-                                </div>
-                                <nav className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setFilters({ ...filters, page: page - 1 })}
-                                        disabled={page === 1}
-                                        className="btn btn-secondary rounded-l-md rounded-r-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Anterior
-                                    </button>
-                                    <span
-                                        className="relative inline-flex items-center px-3 sm:px-4 py-2 border text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200"
-                                        style={{ borderColor: 'var(--color-secondary-500)' }}
-                                    >
-                                        Página {page} de {totalPages}
-                                    </span>
-                                    <button
-                                        onClick={() => setFilters({ ...filters, page: page + 1 })}
-                                        disabled={page === totalPages}
-                                        className="btn btn-secondary rounded-r-md rounded-l-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Siguiente
-                                    </button>
-                                </nav>
-                            </div>
-
-                            {/* Mobile: Page size selector */}
-                            <div className="flex items-center justify-between w-full sm:hidden pt-2 border-t border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-2">
-                                    <label className="text-xs text-gray-700 dark:text-gray-200 whitespace-nowrap">
-                                        Mostrar:
-                                    </label>
-                                    <select
-                                        value={pageSize}
-                                        onChange={(e) => {
-                                            const newPageSize = parseInt(e.target.value);
-                                            setFilters({ ...filters, per_page: newPageSize, page: 1 });
-                                        }}
-                                        className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
-                                    >
-                                        <option value="10">10</option>
-                                        <option value="20">20</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
-                                </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Página {page} de {totalPages}
-                                </p>
-                            </div>
-                        </div>
+                {!loading && businesses.length > 0 && isSuperAdmin && (
+                    <div className="px-4 border-t border-stone-200">
+                        <Pagination
+                            page={page}
+                            pageSize={pageSize}
+                            total={total}
+                            onPageChange={(p) => setFilters({ ...filters, page: p })}
+                            onPageSizeChange={(size) => setFilters({ ...filters, per_page: size, page: 1 })}
+                        />
                     </div>
                 )}
                 </div>

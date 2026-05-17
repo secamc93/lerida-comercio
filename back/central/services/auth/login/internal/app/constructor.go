@@ -13,6 +13,7 @@ type Iapp interface {
 	GetUserRolesPermissions(ctx context.Context, userID uint, businessID uint, token string) (*domain.UserRolesPermissionsResponse, error)
 	ChangePassword(ctx context.Context, request domain.ChangePasswordRequest) (*domain.ChangePasswordResponse, error)
 	GeneratePassword(ctx context.Context, request domain.GeneratePasswordRequest) (*domain.GeneratePasswordResponse, error)
+	GetVerifyInfo(ctx context.Context, userID uint) (string, []string, error)
 	// GenerateAPIKey(ctx context.Context, request domain.GenerateAPIKeyRequest) (*domain.GenerateAPIKeyResponse, error)
 	// ValidateAPIKey(ctx context.Context, request domain.ValidateAPIKeyRequest) (*domain.ValidateAPIKeyResponse, error)
 }

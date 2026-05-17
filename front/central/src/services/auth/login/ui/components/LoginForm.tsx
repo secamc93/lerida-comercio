@@ -122,13 +122,9 @@ export const LoginForm = () => {
         <div className={`w-full max-w-sm ${formClass}`}>
             {/* Logo */}
             <div className={isDark ? 'login-logo-dark' : 'login-logo-light'}>
-                <img
-                    src="https://images-cam93.s3.us-east-1.amazonaws.com/logo+(2).png"
-                    alt="ProbabilityIA Logo"
-                    className="w-8 h-8"
-                />
+                <span className="text-2xl">🏪</span>
                 <div className={isDark ? 'login-logo-text-dark' : 'login-logo-text-light'}>
-                    ProbabilityIA
+                    Lérida Comercio
                 </div>
             </div>
 

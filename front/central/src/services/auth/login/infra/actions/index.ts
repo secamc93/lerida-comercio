@@ -6,15 +6,13 @@ import { LoginUseCase } from '../../app';
 import {
     LoginRequest,
     ChangePasswordRequest,
-    GeneratePasswordRequest,
-    GenerateBusinessTokenRequest
+    GeneratePasswordRequest
 } from '../repository/mapper/request';
 import {
     LoginSuccessResponse,
     UserRolesPermissionsSuccessResponse,
     ChangePasswordResponse,
-    GeneratePasswordResponse,
-    GenerateBusinessTokenSuccessResponse
+    GeneratePasswordResponse
 } from '../repository/mapper/response';
 
 // Instancia del repositorio y caso de uso (Singleton implícito por módulo)

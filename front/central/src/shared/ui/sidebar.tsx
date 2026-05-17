@@ -254,9 +254,7 @@ export function Sidebar({ user }: SidebarProps) {
         <div className="flex flex-col h-full">
           {/* Logo - Clickeable */}
           <a
-            href="https://www.probabilityia.com.co/"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/"
             className="flex flex-col items-center py-4 transition-all duration-300 gap-2 hover:opacity-80"
           >
             <div className={`relative transition-all duration-300 flex items-center justify-center cursor-pointer ${primaryExpanded ? 'w-56 h-10' : 'w-8 h-8'}`}>
@@ -269,7 +267,7 @@ export function Sidebar({ user }: SidebarProps) {
               ) : (
                 <Image
                   src={primaryExpanded ? "/logo2recortado.png" : "/logo.ico"}
-                  alt="Probability Logo"
+                  alt="Lérida Comercio"
                   fill
                   className="object-contain"
                   priority

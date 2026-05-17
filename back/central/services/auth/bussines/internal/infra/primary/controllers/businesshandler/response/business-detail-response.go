@@ -23,6 +23,11 @@ type BusinessDetailResponse struct {
 	Timezone           string                     `json:"timezone"`
 	Address            string                     `json:"address"`
 	Description        string                     `json:"description"`
+	Phone              string                     `json:"phone"`
+	Schedule           string                     `json:"schedule"`
+	Rating             float64                    `json:"rating"`
+	Category           string                     `json:"category"`
+	Icon               string                     `json:"icon"`
 	LogoURL            string                     `json:"logo_url"`
 	PrimaryColor       string                     `json:"primary_color"`
 	SecondaryColor     string                     `json:"secondary_color"`

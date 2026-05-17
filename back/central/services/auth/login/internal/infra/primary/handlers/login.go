@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/secamc93/lerida-comercio/back/central/services/auth/login/internal/domain"
@@ -87,17 +88,25 @@ func (h *AuthHandler) LoginHandler(c *gin.Context) {
 	isMobileClient := clientType == "mobile" || clientType == "api"
 
 	if !isMobileClient {
-		// Setear cookie HttpOnly con Partitioned para soporte de iframes
-		// Partitioned permite cookies third-party en iframes (Shopify, etc.)
-		cookieValue := fmt.Sprintf(
-			"%s=%s; Max-Age=%d; Path=%s; Domain=%s; Secure; HttpOnly; SameSite=None; Partitioned",
-			"session_token",
-			domainResponse.Token,
-			7*24*60*60,
-			"/",
-			".probabilityia.com.co",
-		)
-		c.Header("Set-Cookie", cookieValue)
+		// Cookie configurable por env:
+		// - SESSION_COOKIE_DOMAIN: dominio (vacío en dev → no se setea Domain)
+		// - APP_ENV: development → SameSite=Lax + sin Secure (para http://localhost)
+		//            production  → SameSite=None + Secure + Partitioned (para iframes terceros)
+		cookieDomain := h.env.Get("SESSION_COOKIE_DOMAIN")
+		isProd := h.env.Get("APP_ENV") == "production"
+
+		var sb strings.Builder
+		fmt.Fprintf(&sb, "session_token=%s; Max-Age=%d; Path=/; HttpOnly",
+			domainResponse.Token, 7*24*60*60)
+		if cookieDomain != "" {
+			fmt.Fprintf(&sb, "; Domain=%s", cookieDomain)
+		}
+		if isProd {
+			sb.WriteString("; Secure; SameSite=None; Partitioned")
+		} else {
+			sb.WriteString("; SameSite=Lax")
+		}
+		c.Header("Set-Cookie", sb.String())
 
 		// No retornar token en JSON por seguridad (solo en cookie HttpOnly)
 		loginResponse.Token = ""

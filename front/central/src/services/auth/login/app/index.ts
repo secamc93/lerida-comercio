@@ -2,15 +2,13 @@ import { ILoginRepository } from '../domain';
 import {
     LoginRequest,
     ChangePasswordRequest,
-    GeneratePasswordRequest,
-    GenerateBusinessTokenRequest
+    GeneratePasswordRequest
 } from '../infra/repository/mapper/request';
 import {
     LoginSuccessResponse,
     UserRolesPermissionsSuccessResponse,
     ChangePasswordResponse,
-    GeneratePasswordResponse,
-    GenerateBusinessTokenSuccessResponse
+    GeneratePasswordResponse
 } from '../infra/repository/mapper/response';
 
 export class LoginUseCase {

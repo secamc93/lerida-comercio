@@ -57,6 +57,11 @@ type Business struct {
 	Timezone         string `gorm:"size:40;default:'America/Bogota'"`
 	Address          string `gorm:"size:255"`
 	Description      string `gorm:"size:500"`
+	Phone            string  `gorm:"size:30"`
+	Schedule         string  `gorm:"size:120"`
+	Rating           float64 `gorm:"default:0"`
+	Category         string  `gorm:"size:80;index"`
+	Icon             string  `gorm:"size:80"`
 
 	// Marca blanca
 	LogoURL         string  `gorm:"size:255"`

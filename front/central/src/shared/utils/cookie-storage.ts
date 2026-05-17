@@ -53,7 +53,6 @@ export interface UserPermissions {
 
 const KEYS = {
     SESSION_TOKEN: 'session_token',
-    BUSINESS_TOKEN: 'business_token',
     USER_DATA: 'user_data',
     BUSINESSES_DATA: 'businesses_data',
     ACTIVE_BUSINESS_ID: 'active_business_id',
@@ -252,15 +251,6 @@ export const CookieStorage = {
         setItem(KEYS.SESSION_TOKEN, token);
     },
 
-    // Business Token
-    getBusinessToken: (): string | null => {
-        return getItem(KEYS.BUSINESS_TOKEN);
-    },
-
-    setBusinessToken: (token: string) => {
-        setItem(KEYS.BUSINESS_TOKEN, token);
-    },
-
     // User Data
     getUser: (): UserData | null => {
         const data = getItem(KEYS.USER_DATA);
@@ -313,7 +303,6 @@ export const CookieStorage = {
     // Clear Session
     clearSession: () => {
         removeItem(KEYS.SESSION_TOKEN);
-        removeItem(KEYS.BUSINESS_TOKEN);
         removeItem(KEYS.USER_DATA);
         removeItem(KEYS.BUSINESSES_DATA);
         removeItem(KEYS.ACTIVE_BUSINESS_ID);

@@ -17,6 +17,8 @@ export * from './full-width-modal';
 export * from './input';
 export * from './secret-input';
 export * from './modal';
+export { Pagination } from './pagination';
+export type { PaginationProps as PaginationComponentProps } from './pagination';
 export * from './select';
 export * from './sidebar';
 export * from './spinner';

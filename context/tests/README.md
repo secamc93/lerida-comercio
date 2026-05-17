@@ -1,58 +1,89 @@
-# tests/
+# Casos de prueba E2E — `context/tests/`
 
-Planes de testing, casos edge identificados y cobertura por módulo.
+Casos de prueba **manuales documentados** del backend `back/central` (SaaS
+multi-tenant + RBAC) y del frontend `front/central`.
 
-> Esto **no** son los tests en sí (esos viven junto al código que prueban,
-> con extensión `_test.go` o `.test.tsx`). Aquí documentamos **qué probar**
-> y **por qué**.
+> El README anterior describía un proyecto previo (directorio Lérida + torneo).
+> El proyecto se refactorizó a SaaS hexagonal; esta carpeta refleja el estado
+> actual del repo.
 
-## Estado actual
+## Estructura
 
-- ❌ Backend: sin tests automatizados.
-- ❌ Frontend: sin tests automatizados.
-
-## Backlog de tests sugerido
-
-### Backend (Go)
-- `handlers/auth_handler_test.go`
-  - login admin OK / credenciales inválidas
-  - login jugador OK / credenciales inválidas
-  - registro jugador: username duplicado, dorsal duplicado en mismo equipo,
-    posición inválida
-  - `me` con token válido/expirado/sin header
-- `handlers/comercios_handler_test.go`
-  - CRUD con permisos correctos
-  - filtros `q` y `categoria_id`
-- `handlers/torneo_handler_test.go`
-  - cálculo de la tabla con varios escenarios
-  - upsert de stats
-  - mi-equipo según token
-
-### Frontend (Next.js)
-- `LoginGate`: cambio entre pasos, validaciones, manejo de errores del API
-- `Navbar`: badge cambia según rol
-- `page.tsx (Directorio)`: filtros por categoría y búsqueda
-- `torneo/page.tsx`: cambio de jornada, edición de marcador
-
-## Cómo arrancar
-
-Cuando estemos listos para testing:
-
-**Backend:**
-```bash
-go test ./...
 ```
-Usar `httptest` + un Postgres de test (puede ser el mismo container con
-otra DB).
-
-**Frontend:**
-Instalar Vitest + Testing Library:
-```bash
-pnpm add -D vitest @testing-library/react @testing-library/jest-dom jsdom
+context/tests/
+├── <modulo>/
+│   ├── back/      NN-kebab-descripcion.md   (uno por escenario, no por endpoint)
+│   ├── front/     NN-kebab-descripcion.md   (UI con Playwright)
+│   ├── shared/    test_data.md (credenciales, IDs base)
+│   └── RESULTS.md (registro de ejecuciones por fecha + bugs)
 ```
 
-## Convención
+Módulos vigentes (alineados con `back/central/services/auth/`):
 
-Si identificas un caso edge raro mientras desarrollas, déjalo documentado
-aquí con un archivo por módulo (`backend-auth.md`, `frontend-torneo.md`,
-etc.) y un checklist de casos.
+- `auth/` — login, verify, change-password, generate-password, tokens.
+- `users/` — CRUD users + assign-role.
+- `roles/` — CRUD roles + filtros + permisos asignados al rol.
+- `permissions/` — CRUD permissions + bulk + filtros.
+- `resources/` — CRUD recursos.
+- `actions/` — CRUD acciones.
+- `businesses/` — CRUD negocios + activate/deactivate + configured-resources.
+- `business-types/` — CRUD tipos de negocio.
+
+## Convención de nombres
+
+`NN-kebab-descripcion.md` donde `NN` es `01`, `02`, … dentro de la carpeta.
+Si quieres prefijar con `CU-` (caso de uso) también vale; mantén el formato
+parejo dentro de un mismo módulo.
+
+## Formato del archivo de caso
+
+```markdown
+# NN — Título corto
+
+**Módulo:** <modulo>   **Tipo:** back | front   **Estado:** ✅ OK | ❌ FAIL | ⚠️ BUG
+
+## Objetivo
+Una línea: qué se valida.
+
+## Precondiciones
+- Backend up en `:3050`, frontend en `:3000`
+- Token JWT de super admin (ver `auth/shared/test_data.md`)
+- Datos base sembrados
+
+## Pasos
+
+### 1. Acción
+**Request:**
+\`\`\`http
+POST /api/v1/auth/login
+Content-Type: application/json
+X-Client-Type: api
+
+{"email":"admin@lerida.local","password":"admin123"}
+\`\`\`
+
+**Esperado (200):**
+\`\`\`json
+{ "success": true, "data": { "token": "...", ... } }
+\`\`\`
+
+### 2. ...
+
+## Validaciones post
+- Status code
+- Forma del payload
+- Efecto en DB (si aplica) — `SELECT ...`
+
+## Notas
+- Bugs encontrados se anotan en `RESULTS.md` del módulo y se referencian aquí.
+```
+
+## Reglas durante ejecución
+
+Ver `.claude/rules/testing.md`. Resumen:
+- Crear/modificar SOLO vía API (no INSERT directo).
+- Postgres MCP es solo lectura (`SELECT`) para verificar efectos.
+- Base URL backend: `http://localhost:3050/api/v1`. Frontend: `http://localhost:3000`.
+- En tests E2E **siempre** incluir `X-Client-Type: api` en `POST /auth/login`
+  (si no, el backend setea cookie HttpOnly y omite el token del body — ver
+  bug abierto en `auth/RESULTS.md`).

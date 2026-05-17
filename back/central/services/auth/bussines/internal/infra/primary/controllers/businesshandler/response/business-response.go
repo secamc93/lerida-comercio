@@ -8,6 +8,10 @@ type BusinessResponse struct {
 	Name            string    `json:"name"`
 	Description     string    `json:"description"`
 	Address         string    `json:"address"`
+	Schedule        string    `json:"schedule"`
+	Rating          float64   `json:"rating"`
+	Category        string    `json:"category"`
+	Icon            string    `json:"icon"`
 	Phone           string    `json:"phone"`
 	Email           string    `json:"email"`
 	Website         string    `json:"website"`

@@ -2,6 +2,7 @@ package authhandler
 
 import (
 	"github.com/secamc93/lerida-comercio/back/central/services/auth/login/internal/app"
+	"github.com/secamc93/lerida-comercio/back/central/shared/env"
 	"github.com/secamc93/lerida-comercio/back/central/shared/log"
 
 	"github.com/gin-gonic/gin"
@@ -22,13 +23,15 @@ type IAuthHandler interface {
 type AuthHandler struct {
 	usecase app.Iapp
 	logger  log.ILogger
+	env     env.IConfig
 }
 
 // New crea una nueva instancia del handler de autenticación
-func New(usecase app.Iapp, logger log.ILogger) IAuthHandler {
+func New(usecase app.Iapp, logger log.ILogger, cfg env.IConfig) IAuthHandler {
 	contextualLogger := logger.WithModule("autenticación")
 	return &AuthHandler{
 		usecase: usecase,
 		logger:  contextualLogger,
+		env:     cfg,
 	}
 }

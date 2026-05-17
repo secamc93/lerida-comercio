@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Alert } from '@/shared/ui/alert';
 import { Modal } from '@/shared/ui/modal';
-import { Table, TableColumn, FilterOption, ActiveFilter } from '@/shared/ui';
+import { DynamicFilters, FilterOption, ActiveFilter, Pagination } from '@/shared/ui';
 import { Permission } from '../../domain/types';
 import { PermissionForm } from './PermissionForm';
 import { BulkPermissionForm } from './BulkPermissionForm';
@@ -13,14 +13,13 @@ import { getResourcesAction } from '@/services/auth/resources/infra/actions';
 import { ConfirmModal } from '@/shared/ui/confirm-modal';
 import { getActionError } from '@/shared/utils/action-result';
 
-const PAGE_SIZE = 10;
-
 export const PermissionList: React.FC = () => {
     const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
 
@@ -131,11 +130,11 @@ export const PermissionList: React.FC = () => {
 
     // Paginación client-side
     useEffect(() => {
-        const start = (page - 1) * PAGE_SIZE;
-        setPermissions(allPermissions.slice(start, start + PAGE_SIZE));
+        const start = (page - 1) * pageSize;
+        setPermissions(allPermissions.slice(start, start + pageSize));
         setTotal(allPermissions.length);
-        setTotalPages(Math.ceil(allPermissions.length / PAGE_SIZE) || 1);
-    }, [allPermissions, page]);
+        setTotalPages(Math.ceil(allPermissions.length / pageSize) || 1);
+    }, [allPermissions, page, pageSize]);
 
     const handleDelete = async () => {
         if (!deleteId) return;
@@ -154,59 +153,9 @@ export const PermissionList: React.FC = () => {
         loadPermissions();
     };
 
-    // Columnas de la tabla
-    const columns: TableColumn<Permission>[] = [
-        { key: 'id', label: 'ID', width: '60px' },
-        {
-            key: 'name',
-            label: 'Nombre',
-            render: (_, row) => <span className="font-medium text-gray-900 dark:text-white">{row.name}</span>,
-        },
-        {
-            key: 'resource',
-            label: 'Recurso',
-            render: (_, row) => <span style={{ color: 'var(--color-primary-600)' }}>{row.resource}</span>,
-        },
-        { key: 'action', label: 'Acción' },
-        { key: 'scope_name', label: 'Scope' },
-        {
-            key: 'business_type_name',
-            label: 'Tipo de Negocio',
-            render: (_, row) => <span>{row.business_type_name || '-'}</span>,
-        },
-        {
-            key: 'actions',
-            label: 'Acciones',
-            align: 'right',
-            render: (_, row) => (
-                <div className="flex justify-end gap-2">
-                    <button
-                        onClick={() => { setEditingPermission(row); setShowCreateModal(true); }}
-                        className="p-2 btn btn-quaternary rounded-md transition-colors"
-                        title="Editar permiso"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </button>
-                    <button
-                        onClick={() => setDeleteId(row.id)}
-                        className="p-2 btn btn-danger rounded-md transition-colors"
-                        title="Eliminar permiso"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </div>
-            ),
-        },
-    ];
-
     return (
         <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Permisos</h1>
+            <div className="flex justify-end items-center">
                 <Button
                     variant="secondary"
                     size="sm"
@@ -222,29 +171,90 @@ export const PermissionList: React.FC = () => {
 
             {error && <Alert type="error" onClose={() => setError(null)}>{error}</Alert>}
 
-            <Table<Permission>
-                columns={columns}
-                data={permissions}
-                keyExtractor={(row) => row.id}
-                loading={loading}
-                emptyMessage="No hay permisos disponibles"
-                filters={{
-                    availableFilters,
-                    activeFilters,
-                    onAddFilter: handleAddFilter,
-                    onRemoveFilter: handleRemoveFilter,
-                    onCreate: () => { setEditingPermission(null); setShowCreateModal(true); },
-                    createButtonIconOnly: true,
-                }}
-                pagination={{
-                    currentPage: page,
-                    totalPages,
-                    totalItems: total,
-                    itemsPerPage: PAGE_SIZE,
-                    onPageChange: setPage,
-                    showItemsPerPageSelector: false,
-                }}
+            <DynamicFilters
+                availableFilters={availableFilters}
+                activeFilters={activeFilters}
+                onAddFilter={handleAddFilter}
+                onRemoveFilter={handleRemoveFilter}
+                onCreate={() => { setEditingPermission(null); setShowCreateModal(true); }}
+                createButtonIconOnly
             />
+
+            <div className="rounded-xl border border-stone-200 overflow-hidden">
+                <table className="w-full text-sm">
+                    <thead className="bg-emerald-950 text-white">
+                        <tr>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Nombre</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Recurso</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Acción</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Scope</th>
+                            <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Tipo de Negocio</th>
+                            <th className="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={7} className="px-4 py-8 text-center text-stone-400">
+                                    Cargando permisos...
+                                </td>
+                            </tr>
+                        ) : permissions.length === 0 ? (
+                            <tr>
+                                <td colSpan={7} className="px-4 py-8 text-center text-stone-400">
+                                    No hay permisos disponibles
+                                </td>
+                            </tr>
+                        ) : (
+                            permissions.map((permission) => (
+                                <tr key={permission.id} className="border-t border-stone-100 hover:bg-stone-50 transition-colors">
+                                    <td className="px-4 py-2.5 text-stone-700">{permission.id}</td>
+                                    <td className="px-4 py-2.5 text-stone-700 font-medium">{permission.name}</td>
+                                    <td className="px-4 py-2.5 text-stone-700">
+                                        <span style={{ color: 'var(--color-primary-600)' }}>{permission.resource}</span>
+                                    </td>
+                                    <td className="px-4 py-2.5 text-stone-700">{permission.action}</td>
+                                    <td className="px-4 py-2.5 text-stone-700">{permission.scope_name}</td>
+                                    <td className="px-4 py-2.5 text-stone-700">{permission.business_type_name || '-'}</td>
+                                    <td className="px-4 py-2.5 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                onClick={() => { setEditingPermission(permission); setShowCreateModal(true); }}
+                                                className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
+                                                title="Editar permiso"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={() => setDeleteId(permission.id)}
+                                                className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
+                                                title="Eliminar permiso"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {!loading && total > 0 && (
+                <Pagination
+                    page={page}
+                    pageSize={pageSize}
+                    total={total}
+                    onPageChange={setPage}
+                    onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
+                />
+            )}
 
             <Modal
                 isOpen={showCreateModal}

@@ -36,6 +36,14 @@ export default function Navbar() {
         <div className="flex items-center gap-4 flex-wrap text-sm">
           <Link href="/" className="hover:text-yellow-300 transition">Comercios</Link>
           <Link href="/torneo" className="hover:text-yellow-300 transition">Torneo ⚽</Link>
+          {role === "admin" && (
+            <Link
+              href="/panel"
+              className="bg-yellow-400/20 border border-yellow-400/50 text-yellow-200 hover:bg-yellow-400/30 px-3 py-1 rounded text-xs font-semibold transition"
+            >
+              ⚙️ Panel
+            </Link>
+          )}
 
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${roleColor}`}>
             ● {roleLabel}

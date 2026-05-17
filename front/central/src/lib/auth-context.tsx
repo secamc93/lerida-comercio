@@ -1,19 +1,28 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { api, getToken, setToken, Rol } from "./api";
+import { Rol } from "./api";
+import {
+  legacyLoginAction,
+  legacySessionAction,
+  legacyLogoutAction,
+} from "./auth-actions";
 
-interface MeResponse {
-  role: string;
-  user: { id: number; username?: string; nombre?: string };
+interface AuthUser {
+  id: number;
+  username?: string;
+  nombre?: string;
+  email?: string;
 }
 
 interface AuthCtx {
   role: Rol;
-  user: MeResponse["user"] | null;
+  user: AuthUser | null;
   loading: boolean;
+  /** El usuario eligió explícitamente navegar como invitado. */
   invitadoChosen: boolean;
-  loginAdmin: (username: string, password: string) => Promise<void>;
+  /** Login de administrador contra el backend hexagonal (email + password). */
+  loginAdmin: (email: string, password: string) => Promise<void>;
   loginJugador: (username: string, password: string) => Promise<void>;
   registerJugador: (input: RegisterInput) => Promise<void>;
   loginInvitado: () => void;
@@ -29,104 +38,108 @@ export interface RegisterInput {
   dorsal: number;
 }
 
+const INVITADO_KEY = "lerida_invitado";
+
+// Mensaje temporal: el backend aún no expone autenticación de jugadores.
+const JUGADOR_PENDIENTE =
+  "El acceso de jugadores estará disponible próximamente.";
+
 const Ctx = createContext<AuthCtx | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Rol>("invitado");
-  const [user, setUser] = useState<MeResponse["user"] | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [invitadoChosen, setInvitadoChosen] = useState(false);
 
   useEffect(() => {
-    const tok = getToken();
-    const savedInvitado = typeof window !== "undefined" && localStorage.getItem("lerida_invitado") === "1";
-    if (!tok && !savedInvitado) {
-      setLoading(false);
-      return;
-    }
-    if (savedInvitado && !tok) {
-      setRole("invitado");
-      setInvitadoChosen(true);
-      setLoading(false);
-      return;
-    }
-    const savedRole = (typeof window !== "undefined" && localStorage.getItem("lerida_role")) as Rol | null;
-    api<{ success: boolean; data: { user_id: number; email: string; roles: string[] | null } }>(
-      "/api/v1/auth/verify"
-    )
-      .then((d) => {
-        const role: Rol = savedRole === "admin" || savedRole === "jugador" ? savedRole : "jugador";
-        setRole(role);
-        setUser({ id: d.data.user_id, username: d.data.email, nombre: d.data.email });
+    const savedInvitado =
+      typeof window !== "undefined" &&
+      localStorage.getItem(INVITADO_KEY) === "1";
+
+    legacySessionAction()
+      .then((session) => {
+        if (session) {
+          setRole("admin");
+          setUser({
+            id: session.user_id,
+            email: session.email,
+            username: session.email,
+            nombre: session.email,
+          });
+          localStorage.removeItem(INVITADO_KEY);
+        } else if (savedInvitado) {
+          setRole("invitado");
+          setInvitadoChosen(true);
+        }
       })
       .catch(() => {
-        setToken(null);
-        localStorage.removeItem("lerida_role");
-        setRole("invitado");
+        if (savedInvitado) {
+          setRole("invitado");
+          setInvitadoChosen(true);
+        }
       })
       .finally(() => setLoading(false));
   }, []);
 
   async function loginAdmin(email: string, password: string) {
-    const r = await api<{
-      success: boolean;
-      data: { token: string; user: { id: number; name: string; email: string }; is_super_admin: boolean };
-    }>("/api/v1/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-      auth: false,
-    });
-    setToken(r.data.token);
+    const result = await legacyLoginAction(email, password);
+    if (!result.success) {
+      throw new Error(result.error || "No se pudo iniciar sesión");
+    }
+    const session = await legacySessionAction();
     setRole("admin");
-    localStorage.setItem("lerida_role", "admin");
-    setUser({ id: r.data.user.id, username: r.data.user.email, nombre: r.data.user.name });
+    setUser(
+      session
+        ? {
+            id: session.user_id,
+            email: session.email,
+            username: session.email,
+            nombre: session.email,
+          }
+        : { id: 0, email, username: email, nombre: email },
+    );
     setInvitadoChosen(false);
-    localStorage.removeItem("lerida_invitado");
+    localStorage.removeItem(INVITADO_KEY);
   }
 
-  async function loginJugador(username: string, password: string) {
-    const d = await api<{ token: string; user: MeResponse["user"] }>(
-      "/api/v1/auth/login/jugador",
-      { method: "POST", body: JSON.stringify({ username, password }), auth: false }
-    );
-    setToken(d.token);
-    setRole("jugador");
-    setUser(d.user);
-    setInvitadoChosen(false);
-    localStorage.removeItem("lerida_invitado");
+  async function loginJugador(_username: string, _password: string) {
+    throw new Error(JUGADOR_PENDIENTE);
   }
 
-  async function registerJugador(input: RegisterInput) {
-    const d = await api<{ token: string; user: MeResponse["user"] }>(
-      "/api/v1/auth/register/jugador",
-      { method: "POST", body: JSON.stringify(input), auth: false }
-    );
-    setToken(d.token);
-    setRole("jugador");
-    setUser(d.user);
-    setInvitadoChosen(false);
-    localStorage.removeItem("lerida_invitado");
+  async function registerJugador(_input: RegisterInput) {
+    throw new Error(JUGADOR_PENDIENTE);
   }
 
   function loginInvitado() {
-    setToken(null);
     setRole("invitado");
     setUser(null);
     setInvitadoChosen(true);
-    localStorage.setItem("lerida_invitado", "1");
+    localStorage.setItem(INVITADO_KEY, "1");
   }
 
   function logout() {
-    setToken(null);
+    void legacyLogoutAction();
     setRole("invitado");
     setUser(null);
     setInvitadoChosen(false);
-    localStorage.removeItem("lerida_invitado");
-    localStorage.removeItem("lerida_role");
+    localStorage.removeItem(INVITADO_KEY);
   }
 
   return (
-    <Ctx.Provider value={{ role, user, loading, invitadoChosen, loginAdmin, loginJugador, registerJugador, loginInvitado, logout }}>
+    <Ctx.Provider
+      value={{
+        role,
+        user,
+        loading,
+        invitadoChosen,
+        loginAdmin,
+        loginJugador,
+        registerJugador,
+        loginInvitado,
+        logout,
+      }}
+    >
       {children}
     </Ctx.Provider>
   );

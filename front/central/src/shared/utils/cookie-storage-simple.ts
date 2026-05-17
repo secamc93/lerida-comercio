@@ -75,7 +75,6 @@ function deleteCookie(name: string): void {
 
 const KEYS = {
     SESSION_TOKEN: 'session_token',
-    BUSINESS_TOKEN: 'business_token',
     USER_DATA: 'user_data',
     BUSINESSES_DATA: 'businesses_data',
     ACTIVE_BUSINESS_ID: 'active_business_id',
@@ -91,10 +90,6 @@ export const SimpleCookieStorage = {
     getSessionToken: (): string | null => getCookie(KEYS.SESSION_TOKEN),
     setSessionToken: (token: string) => setCookie(KEYS.SESSION_TOKEN, token),
 
-    // Business Token
-    getBusinessToken: (): string | null => getCookie(KEYS.BUSINESS_TOKEN),
-    setBusinessToken: (token: string) => setCookie(KEYS.BUSINESS_TOKEN, token),
-
     // User Data
     getUser: (): UserData | null => {
         const data = getCookie(KEYS.USER_DATA);
@@ -107,7 +102,6 @@ export const SimpleCookieStorage = {
     // Clear Session
     clearSession: () => {
         deleteCookie(KEYS.SESSION_TOKEN);
-        deleteCookie(KEYS.BUSINESS_TOKEN);
         deleteCookie(KEYS.USER_DATA);
         deleteCookie(KEYS.BUSINESSES_DATA);
         deleteCookie(KEYS.ACTIVE_BUSINESS_ID);

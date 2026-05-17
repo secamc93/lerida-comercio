@@ -6,7 +6,7 @@ import { Alert } from '@/shared/ui/alert';
 import { Modal } from '@/shared/ui/modal';
 import { Select } from '@/shared/ui/select';
 import { Spinner } from '@/shared/ui/spinner';
-import { DynamicFilters, FilterOption, ActiveFilter } from '@/shared/ui';
+import { DynamicFilters, FilterOption, ActiveFilter, Pagination } from '@/shared/ui';
 import { User, GetUsersParams } from '../../domain/types';
 import { UserForm } from './UserForm';
 import { getUsersAction, deleteUserAction, getUserByIdAction, assignRolesAction, resetPasswordAction } from '../../infra/actions';
@@ -388,10 +388,6 @@ export const UserList: React.FC = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Usuarios</h1>
-            </div>
-
             {error && <Alert type="error" onClose={() => setError(null)}>{error}</Alert>}
 
             <div>
@@ -420,60 +416,42 @@ export const UserList: React.FC = () => {
                         </Button>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-b-lg rounded-t-none shadow-sm dark:shadow-lg border border-gray-200 dark:border-gray-700 border-t-0 overflow-hidden -mt-px">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
+                <div className="bg-white rounded-b-lg rounded-t-none shadow-sm border border-gray-200 border-t-0 overflow-hidden -mt-px">
+                    <div className="rounded-xl border border-stone-200 overflow-hidden">
+                        <table className="w-full text-sm">
+                            <thead className="bg-emerald-950 text-white">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        ID
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Avatar
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Nombre
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Email
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Teléfono
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Scope
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Rol
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Activo
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">
-                                        Acciones
-                                    </th>
+                                    <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
+                                    <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Avatar</th>
+                                    <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Nombre</th>
+                                    <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Email</th>
+                                    <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Teléfono</th>
+                                    <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Scope</th>
+                                    <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Rol</th>
+                                    <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Activo</th>
+                                    <th className="px-4 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody>
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                        <td colSpan={9} className="px-4 py-8 text-center text-stone-400">
                                             Cargando usuarios...
                                         </td>
                                     </tr>
                                 ) : users.length === 0 ? (
                                     <tr>
-                                        <td colSpan={9} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                        <td colSpan={9} className="px-4 py-8 text-center text-stone-400">
                                             No hay usuarios disponibles
                                         </td>
                                     </tr>
                                 ) : (
                                     users.map((user) => (
-                                        <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                        <tr key={user.id} className="border-t border-stone-100 hover:bg-stone-50 transition-colors">
+                                            <td className="px-4 py-2.5 text-stone-700">
                                                 {user.id}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="px-4 py-2.5 text-stone-700">
                                                 {user.avatar_url ? (
                                                     <img
                                                         src={user.avatar_url}
@@ -481,23 +459,23 @@ export const UserList: React.FC = () => {
                                                         className="w-10 h-10 rounded-full object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                                    <div className="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center">
+                                                        <span className="text-sm font-medium text-stone-600">
                                                             {user.name.charAt(0).toUpperCase()}
                                                         </span>
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                            <td className="px-4 py-2.5 text-stone-700 font-medium">
                                                 {user.name}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            <td className="px-4 py-2.5 text-stone-500">
                                                 {user.email}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            <td className="px-4 py-2.5 text-stone-500">
                                                 {user.phone || '-'}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="px-4 py-2.5 text-stone-700">
                                                 {user.scope_code ? (
                                                     <span
                                                         className="px-2 py-1 text-xs font-medium rounded-full"
@@ -516,18 +494,18 @@ export const UserList: React.FC = () => {
                                                         {user.scope_code === 'platform' ? 'Platform' : 'Business'}
                                                     </span>
                                                 ) : (
-                                                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-stone-100 text-stone-600">
                                                         Sin scope
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                            <td className="px-4 py-2.5 text-stone-500">
                                                 {user.business_role_assignments && user.business_role_assignments.length > 0 ? (
                                                     <div className="flex flex-wrap gap-1">
                                                         {user.business_role_assignments.map((assignment, idx) => (
                                                             <span
                                                                 key={idx}
-                                                                className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded"
+                                                                className="px-2 py-0.5 text-xs bg-stone-100 text-stone-700 rounded"
                                                                 title={`Negocio: ${assignment.business_name || assignment.business_id}`}
                                                             >
                                                                 {assignment.role_name || `Rol ${assignment.role_id}`}
@@ -535,10 +513,10 @@ export const UserList: React.FC = () => {
                                                         ))}
                                                     </div>
                                                 ) : (
-                                                    <span className="text-gray-400">-</span>
+                                                    <span className="text-stone-400">-</span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
+                                            <td className="px-4 py-2.5 text-stone-700">
                                                 <span
                                                     className="px-2 py-1 text-xs font-medium rounded-full"
                                                     style={
@@ -556,11 +534,11 @@ export const UserList: React.FC = () => {
                                                     {user.is_active ? 'Sí' : 'No'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <td className="px-4 py-2.5 text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <button
                                                         onClick={() => handleOpenAssignRole(user)}
-                                                        className="p-2 btn btn-tertiary rounded-md transition-colors duration-200"
+                                                        className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
                                                         title="Asignar rol"
                                                         aria-label="Asignar rol"
                                                     >
@@ -571,7 +549,7 @@ export const UserList: React.FC = () => {
                                                     {isSuperAdmin && (
                                                         <button
                                                             onClick={() => setResetPasswordUser(user)}
-                                                            className="p-2 btn btn-quaternary rounded-md transition-colors duration-200"
+                                                            className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
                                                             title="Restablecer contrasena"
                                                             aria-label="Restablecer contrasena"
                                                         >
@@ -582,7 +560,7 @@ export const UserList: React.FC = () => {
                                                     )}
                                                     <button
                                                         onClick={() => handleEdit(user)}
-                                                        className="p-2 btn btn-quaternary rounded-md transition-colors duration-200"
+                                                        className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
                                                         title="Editar usuario"
                                                         aria-label="Editar usuario"
                                                         disabled={loadingUser}
@@ -593,7 +571,7 @@ export const UserList: React.FC = () => {
                                                     </button>
                                                     <button
                                                         onClick={() => setDeleteId(user.id)}
-                                                        className="p-2 btn btn-danger rounded-md transition-colors duration-200"
+                                                        className="p-1.5 rounded hover:bg-stone-100 text-stone-500"
                                                         title="Eliminar usuario"
                                                         aria-label="Eliminar usuario"
                                                     >
@@ -611,70 +589,14 @@ export const UserList: React.FC = () => {
                     </div>
 
                     {!loading && users.length > 0 && (
-                        <div className="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                                    <div>
-                                        <p className="text-sm text-gray-700 dark:text-gray-200">
-                                            Mostrando{' '}
-                                            <span className="font-medium">
-                                                {(page - 1) * pageSize + 1}
-                                            </span>{' '}
-                                            a{' '}
-                                            <span className="font-medium">
-                                                {Math.min(page * pageSize, total)}
-                                            </span>{' '}
-                                            de <span className="font-medium">{total}</span> resultados
-                                        </p>
-                                    </div>
-                                    <nav className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => setFilters({ ...filters, page: page - 1 })}
-                                            disabled={page === 1}
-                                            className="btn btn-secondary rounded-l-md rounded-r-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Anterior
-                                        </button>
-                                        <span
-                                            className="relative inline-flex items-center px-3 sm:px-4 py-2 border text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200"
-                                            style={{ borderColor: 'var(--color-secondary-500)' }}
-                                        >
-                                            Página {page} de {totalPages}
-                                        </span>
-                                        <button
-                                            onClick={() => setFilters({ ...filters, page: page + 1 })}
-                                            disabled={page === totalPages}
-                                            className="btn btn-secondary rounded-r-md rounded-l-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Siguiente
-                                        </button>
-                                    </nav>
-                                </div>
-
-                                <div className="flex items-center justify-between w-full sm:hidden pt-2 border-t border-gray-200 dark:border-gray-700">
-                                    <div className="flex items-center gap-2">
-                                        <label className="text-xs text-gray-700 dark:text-gray-200 whitespace-nowrap">
-                                            Mostrar:
-                                        </label>
-                                        <select
-                                            value={pageSize}
-                                            onChange={(e) => {
-                                                const newPageSize = parseInt(e.target.value);
-                                                setFilters({ ...filters, page_size: newPageSize, page: 1 });
-                                            }}
-                                            className="px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
-                                        >
-                                            <option value="10">10</option>
-                                            <option value="20">20</option>
-                                            <option value="50">50</option>
-                                            <option value="100">100</option>
-                                        </select>
-                                    </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        Página {page} de {totalPages}
-                                    </p>
-                                </div>
-                            </div>
+                        <div className="px-4 border-t border-stone-200">
+                            <Pagination
+                                page={page}
+                                pageSize={pageSize}
+                                total={total}
+                                onPageChange={(p) => setFilters({ ...filters, page: p })}
+                                onPageSizeChange={(size) => setFilters({ ...filters, page_size: size, page: 1 })}
+                            />
                         </div>
                     )}
                 </div>

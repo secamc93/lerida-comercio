@@ -34,6 +34,11 @@ type BusinessRequest struct {
 	Timezone       string
 	Address        string
 	Description    string
+	Phone          string
+	Schedule       string
+	Rating         float64
+	Category       string
+	Icon           string
 
 	// Configuración de marca blanca
 	LogoFile        *multipart.FileHeader // Archivo de imagen para subir a S3
@@ -60,6 +65,11 @@ type UpdateBusinessRequest struct {
 	Timezone           *string
 	Address            *string
 	Description        *string
+	Phone              *string
+	Schedule           *string
+	Rating             *float64
+	Category           *string
+	Icon               *string
 	LogoFile           *multipart.FileHeader
 	PrimaryColor       *string
 	SecondaryColor     *string
@@ -82,6 +92,11 @@ type BusinessResponse struct {
 	Timezone     string
 	Address      string
 	Description  string
+	Phone        string
+	Schedule     string
+	Rating       float64
+	Category     string
+	Icon         string
 
 	// Configuración de marca blanca
 	LogoURL         string

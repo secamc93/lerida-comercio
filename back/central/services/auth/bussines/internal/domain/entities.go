@@ -25,6 +25,11 @@ type Business struct {
 	Timezone       string
 	Address        string
 	Description    string
+	Phone          string
+	Schedule       string
+	Rating         float64
+	Category       string
+	Icon           string
 
 	// Configuración de marca blanca
 	LogoURL         string

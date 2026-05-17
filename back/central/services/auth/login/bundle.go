@@ -29,7 +29,7 @@ func New(
 	authUC := app.New(repo, jwtService, logger, cfg)
 
 	// 4. Inicializar Handler
-	authH := authhandler.New(authUC, logger)
+	authH := authhandler.New(authUC, logger, cfg)
 
 	// 5. Registrar Rutas
 	authH.RegisterRoutes(router, authH, logger)

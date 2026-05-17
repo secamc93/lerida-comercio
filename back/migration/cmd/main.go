@@ -62,6 +62,12 @@ func main() {
 		&models.BusinessResourceConfigured{},
 		&models.APIKey{},
 		&models.Integration{},
+		// Torneo
+		&models.Torneo{},
+		&models.Equipo{},
+		&models.Jugador{},
+		&models.Partido{},
+		&models.PartidoEvento{},
 	); err != nil {
 		log.Fatalf("❌ AutoMigrate falló: %v", err)
 	}

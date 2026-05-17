@@ -34,11 +34,28 @@ func (h *AuthHandler) VerifyHandler(c *gin.Context) {
 		return
 	}
 
+	// El JWT unificado no codifica email ni nombres de roles en sus claims,
+	// por lo que enriquecemos la respuesta consultando el usecase cuando falten.
+	email := authInfo.Email
+	roles := authInfo.Roles
+	if email == "" || roles == nil {
+		if e, rs, err := h.usecase.GetVerifyInfo(ctx, authInfo.UserID); err != nil {
+			h.logger.Warn(ctx).Err(err).Uint("user_id", authInfo.UserID).Msg("No se pudo enriquecer info de verify")
+		} else {
+			if email == "" {
+				email = e
+			}
+			if roles == nil {
+				roles = rs
+			}
+		}
+	}
+
 	// Log de información de autenticación
 	h.logger.Info(ctx).
 		Uint("user_id", authInfo.UserID).
-		Str("user_email", authInfo.Email).
-		Strs("user_roles", authInfo.Roles).
+		Str("user_email", email).
+		Strs("user_roles", roles).
 		Uint("business_id", authInfo.BusinessID).
 		Msg("Usuario autenticado correctamente")
 
@@ -48,8 +65,8 @@ func (h *AuthHandler) VerifyHandler(c *gin.Context) {
 		"message": "Usuario autenticado correctamente",
 		"data": gin.H{
 			"user_id":     authInfo.UserID,
-			"email":       authInfo.Email,
-			"roles":       authInfo.Roles,
+			"email":       email,
+			"roles":       roles,
 			"business_id": authInfo.BusinessID,
 		},
 	})

@@ -10,6 +10,11 @@ type BusinessRequest struct {
 	Timezone       string `form:"timezone"`
 	Address        string `form:"address"`
 	Description    string `form:"description"`
+	Phone          string  `form:"phone" json:"phone"`
+	Schedule       string  `form:"schedule" json:"schedule"`
+	Rating         float64 `form:"rating" json:"rating"`
+	Category       string  `form:"category" json:"category"`
+	Icon           string  `form:"icon" json:"icon"`
 
 	// Configuración de marca blanca
 	LogoFile        *multipart.FileHeader `form:"logo_file"`

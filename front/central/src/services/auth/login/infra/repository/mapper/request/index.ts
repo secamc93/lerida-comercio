@@ -13,10 +13,6 @@ export interface GeneratePasswordRequest {
     user_id?: number;
 }
 
-export interface GenerateBusinessTokenRequest {
-    business_id: number;
-}
-
 // Mappers
 export const mapLoginRequest = (req: LoginRequest): any => {
     return {
@@ -35,11 +31,5 @@ export const mapChangePasswordRequest = (req: ChangePasswordRequest): any => {
 export const mapGeneratePasswordRequest = (req: GeneratePasswordRequest): any => {
     return {
         user_id: req.user_id,
-    };
-};
-
-export const mapGenerateBusinessTokenRequest = (req: GenerateBusinessTokenRequest): any => {
-    return {
-        business_id: req.business_id,
     };
 };

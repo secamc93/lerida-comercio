@@ -93,16 +93,6 @@ export interface GeneratePasswordResponse {
     message: string;
 }
 
-export interface BusinessTokenResponse {
-    token: string;
-}
-
-export interface GenerateBusinessTokenSuccessResponse {
-    success: boolean;
-    data: BusinessTokenResponse;
-    message: string;
-}
-
 // Mappers
 export const mapLoginResponse = (res: any): LoginSuccessResponse => {
     return res as LoginSuccessResponse;
@@ -118,8 +108,4 @@ export const mapChangePasswordResponse = (res: any): ChangePasswordResponse => {
 
 export const mapGeneratePasswordResponse = (res: any): GeneratePasswordResponse => {
     return res as GeneratePasswordResponse;
-};
-
-export const mapGenerateBusinessTokenResponse = (res: any): GenerateBusinessTokenSuccessResponse => {
-    return res as GenerateBusinessTokenSuccessResponse;
 };

@@ -7,6 +7,7 @@ import (
 	"github.com/secamc93/lerida-comercio/back/central/cmd/internal/routes"
 	"github.com/secamc93/lerida-comercio/back/central/services/auth"
 	"github.com/secamc93/lerida-comercio/back/central/services/auth/middleware"
+	"github.com/secamc93/lerida-comercio/back/central/services/modules"
 	"github.com/secamc93/lerida-comercio/back/central/shared/db"
 	"github.com/secamc93/lerida-comercio/back/central/shared/env"
 	"github.com/secamc93/lerida-comercio/back/central/shared/log"
@@ -55,6 +56,9 @@ func Init(ctx context.Context) error {
 
 	// Bundle de autenticación + RBAC.
 	auth.New(v1Group, database, logger, environment, s3Service)
+
+	// Bundle de módulos de negocio (torneo, etc.).
+	modules.New(v1Group, database, logger)
 
 	LogStartupInfo(ctx, logger, environment, queueRegistry, redisRegistry)
 

@@ -25,8 +25,6 @@ import {
 export const TokenStorage = {
     getSessionToken: () => CookieStorage.getSessionToken(),
     setSessionToken: (token: string) => CookieStorage.setSessionToken(token),
-    getBusinessToken: () => CookieStorage.getBusinessToken(),
-    setBusinessToken: (token: string) => CookieStorage.setBusinessToken(token),
     getUser: () => CookieStorage.getUser(),
     setUser: (user: UserData) => CookieStorage.setUser(user),
     getBusinessesData: () => CookieStorage.getBusinessesData(),

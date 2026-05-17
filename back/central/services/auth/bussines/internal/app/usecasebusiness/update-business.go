@@ -55,6 +55,11 @@ func (uc *BusinessUseCase) UpdateBusiness(ctx context.Context, id uint, request 
 	timezone := existing.Timezone
 	address := existing.Address
 	description := existing.Description
+	phone := existing.Phone
+	schedule := existing.Schedule
+	rating := existing.Rating
+	category := existing.Category
+	icon := existing.Icon
 	logoURL := existing.LogoURL
 	primaryColor := existing.PrimaryColor
 	secondaryColor := existing.SecondaryColor
@@ -85,6 +90,21 @@ func (uc *BusinessUseCase) UpdateBusiness(ctx context.Context, id uint, request 
 	}
 	if request.Description != nil {
 		description = *request.Description
+	}
+	if request.Phone != nil {
+		phone = *request.Phone
+	}
+	if request.Schedule != nil {
+		schedule = *request.Schedule
+	}
+	if request.Rating != nil {
+		rating = *request.Rating
+	}
+	if request.Category != nil {
+		category = *request.Category
+	}
+	if request.Icon != nil {
+		icon = *request.Icon
 	}
 	if request.PrimaryColor != nil {
 		primaryColor = *request.PrimaryColor
@@ -152,6 +172,11 @@ func (uc *BusinessUseCase) UpdateBusiness(ctx context.Context, id uint, request 
 		Timezone:           timezone,
 		Address:            address,
 		Description:        description,
+		Phone:              phone,
+		Schedule:           schedule,
+		Rating:             rating,
+		Category:           category,
+		Icon:               icon,
 		LogoURL:            logoURL,
 		PrimaryColor:       primaryColor,
 		SecondaryColor:     secondaryColor,
@@ -221,6 +246,11 @@ func (uc *BusinessUseCase) UpdateBusiness(ctx context.Context, id uint, request 
 		Timezone:           updated.Timezone,
 		Address:            updated.Address,
 		Description:        updated.Description,
+		Phone:              updated.Phone,
+		Schedule:           updated.Schedule,
+		Rating:             updated.Rating,
+		Category:           updated.Category,
+		Icon:               updated.Icon,
 		LogoURL:            fullLogoURL,
 		PrimaryColor:       updated.PrimaryColor,
 		SecondaryColor:     updated.SecondaryColor,
