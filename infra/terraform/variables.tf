@@ -42,6 +42,12 @@ variable "ssh_cidr" {
   default     = "0.0.0.0/0"
 }
 
+variable "github_repo" {
+  description = "Repositorio GitHub autorizado a asumir el rol OIDC (owner/repo)"
+  type        = string
+  default     = "secamc93/lerida-comercio"
+}
+
 variable "ecr_image_retention_count" {
   description = "Número de imágenes a mantener en ECR (lifecycle policy)"
   type        = number

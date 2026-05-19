@@ -30,6 +30,11 @@ output "ssh_command" {
   value       = "ssh -i ~/.ssh/${var.key_name}.pem ubuntu@${aws_eip.main.public_ip}"
 }
 
+output "github_actions_role_arn" {
+  description = "ARN del rol IAM que asumen los GitHub Actions vía OIDC"
+  value       = aws_iam_role.github_actions.arn
+}
+
 output "app_s3_access_key_id" {
   description = "Access Key ID del usuario IAM de la app (S3)"
   value       = aws_iam_access_key.app.id

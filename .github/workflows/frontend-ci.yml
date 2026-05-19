@@ -1,15 +1,23 @@
-name: Frontend CI
+name: Frontend CI/CD
 
 on:
   push:
     branches: [main]
     paths:
       - "front/central/**"
+      - "infra/compose-deploy/**"
       - ".github/workflows/frontend-ci.yml"
   pull_request:
     paths:
       - "front/central/**"
   workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ROLE: arn:aws:iam::334689162817:role/lerida-comercio-github-actions
+  ECR_IMAGE: 334689162817.dkr.ecr.us-east-1.amazonaws.com/lerida-comercio
+  EC2_HOST: 34.235.36.96
+  PUBLIC_URL: http://ec2-34-235-36-96.compute-1.amazonaws.com
 
 jobs:
   test:
@@ -21,12 +29,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "pnpm"
           cache-dependency-path: front/central/pnpm-lock.yaml
 
@@ -35,22 +41,70 @@ jobs:
 
       - name: Build
         env:
-          NEXT_PUBLIC_API_BASE_URL: http://localhost:3050
+          NEXT_PUBLIC_API_BASE_URL: ${{ env.PUBLIC_URL }}
         run: pnpm build
 
-  docker-build:
+  build-push:
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
+
+      - name: Configurar credenciales AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login en ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
       - uses: docker/setup-buildx-action@v3
-      - name: Build frontend image
+
+      - name: Build & push imagen frontend (ARM64)
         uses: docker/build-push-action@v6
         with:
           context: ./front/central
           file: ./front/central/Dockerfile
-          push: false
-          tags: lerida-comercio/front-central:${{ github.sha }},lerida-comercio/front-central:latest
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.ECR_IMAGE }}:frontend
           build-args: |
-            NEXT_PUBLIC_API_BASE_URL=https://lerida-comercio.example.com/api
+            NEXT_PUBLIC_API_BASE_URL=${{ env.PUBLIC_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar clave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy.pem
+          chmod 600 ~/.ssh/deploy.pem
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Sincronizar docker-compose
+        run: |
+          scp -i ~/.ssh/deploy.pem infra/compose-deploy/docker-compose.yml \
+            ubuntu@"$EC2_HOST":/home/ubuntu/lerida-comercio/docker-compose.yml
+
+      - name: Deploy en EC2
+        run: |
+          ssh -i ~/.ssh/deploy.pem ubuntu@"$EC2_HOST" bash -s <<'EOF'
+          set -e
+          cd /home/ubuntu/lerida-comercio
+          aws ecr get-login-password --region us-east-1 \
+            | docker login --username AWS --password-stdin 334689162817.dkr.ecr.us-east-1.amazonaws.com
+          docker compose pull front-central
+          docker compose up -d front-central
+          docker image prune -f
+          EOF
