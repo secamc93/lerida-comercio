@@ -63,15 +63,41 @@ Para trabajar en el repo necesitás instalado:
 Arranque rápido: `make dev` (levanta DB + migra + seed). Ver más targets con
 `make help`.
 
+## Servicios de desarrollo (tmux)
+
+Los servicios se levantan **orquestados dentro de una sesión `tmux`** (`lerida`)
+mediante `scripts/dev-services.sh`. Esto permite que la IA controle el ciclo de
+vida de cada servicio y, sobre todo, **lea los logs en vivo** para entender el
+comportamiento de la aplicación y diagnosticar problemas.
+
+```bash
+./scripts/dev-services.sh start all        # infra + backend + frontend
+./scripts/dev-services.sh status
+./scripts/dev-services.sh logs backend 200 # la IA lee estos logs
+./scripts/dev-services.sh restart backend
+./scripts/dev-services.sh attach           # adjuntar la sesión tmux
+```
+
+Atajos equivalentes en el Makefile: `make up | down | status | attach |
+logs-backend | logs-frontend | restart-backend | restart-frontend`.
+
+> La IA **siempre revisa los logs de tmux** antes de concluir: así verifica el
+> efecto real de un cambio y entiende el flujo de la aplicación, en vez de
+> suponer. Nunca se arranca el backend con `go run ... &` ni `nohup` — siempre
+> mediante el script.
+
 ## MCPs
 
 El repo trae configurados estos MCP servers (`.mcp.json`) para usar con Claude
 Code:
 
+- **`playwright`** — pruebas en navegador real: la IA navega, hace clics,
+  llena formularios y valida la UI de forma automatizada (testing E2E del
+  frontend).
+- `chrome-devtools` / `chrome-browser` — inspección de red y consola del navegador
 - `postgres-lerida` — consultas a la base de datos (solo lectura para verificar)
 - `github` — operaciones sobre el repositorio
 - `docker` — gestión de contenedores
-- `playwright` / `chrome-devtools` / `chrome-browser` — testing E2E de frontend
 - `fetch` — peticiones HTTP (testing de API)
 - `sequential-thinking` — razonamiento estructurado
 
