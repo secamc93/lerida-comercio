@@ -1,0 +1,108 @@
+name: lerida-comercio-prod
+
+# Stack de producción para el EC2. Las imágenes se descargan de ECR
+# (no se construyen aquí). Variables sensibles en `.env` (no commiteado).
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lerida-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - lerida-net
+
+  migration:
+    image: ${ECR_REPO}:migration
+    container_name: lerida-migration
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_SSLMODE: disable
+    command: ["/app/migration", "--seed"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lerida-net
+    restart: "no"
+
+  back-central:
+    image: ${ECR_REPO}:backend
+    container_name: lerida-back
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      HTTP_PORT: 3050
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_SSLMODE: disable
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      LOG_LEVEL: info
+      DB_LOG_LEVEL: error
+      PGSSLMODE: disable
+      URL_BASE_SWAGGER: ${PUBLIC_URL}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_REGION: us-east-1
+      S3_KEY: ${S3_KEY}
+      S3_SECRET: ${S3_SECRET}
+      # Variables heredadas del backend de probability sin uso en este
+      # proyecto (RabbitMQ/Redis/WhatsApp/Encryption). RELAX_ENV evita el
+      # fatal por variables obligatorias ausentes.
+      RELAX_ENV: "1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    networks:
+      - lerida-net
+
+  front-central:
+    image: ${ECR_REPO}:frontend
+    container_name: lerida-front
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - back-central
+    networks:
+      - lerida-net
+
+  nginx:
+    image: ${ECR_REPO}:nginx
+    container_name: lerida-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - front-central
+      - back-central
+    networks:
+      - lerida-net
+
+volumes:
+  postgres_data:
+    name: lerida-postgres-data-prod
+
+networks:
+  lerida-net:
+    name: lerida-net-prod
+    driver: bridge
