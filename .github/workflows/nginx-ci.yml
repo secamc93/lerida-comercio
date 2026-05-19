@@ -24,7 +24,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Lint nginx.conf
         run: |
+          # --add-host: nginx -t resuelve los upstreams al testear el config;
+          # los nombres de servicio no existen en el runner, los apuntamos a loopback.
           docker run --rm -v ${{ github.workspace }}/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro \
+            --add-host back-central:127.0.0.1 --add-host front-central:127.0.0.1 \
             nginx:1.27-alpine nginx -t
 
   build-push:
