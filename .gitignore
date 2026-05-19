@@ -23,6 +23,7 @@ out/
 .env
 .env.*
 !.env.example
+!.env.AI.example
 .mcp.json
 .mcp.local.json
 .gh-token
