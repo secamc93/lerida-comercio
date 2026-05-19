@@ -92,6 +92,10 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      # Certificados Let's Encrypt del host (emitidos/renovados con certbot)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - front-central
       - back-central

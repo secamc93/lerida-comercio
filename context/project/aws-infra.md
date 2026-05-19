@@ -34,7 +34,14 @@ Crea `/home/ubuntu/lerida-comercio/`. Marca fin en `/home/ubuntu/bootstrap.done`
 ## Deploy — completado 2026-05-18
 
 App corriendo en el EC2 con `docker compose`. URL pública:
-**http://ec2-34-235-36-96.compute-1.amazonaws.com**
+**https://leridacomercio.com**
+
+Dominio `leridacomercio.com` registrado en Route 53 (hosted zone
+`Z00417832UXOK9QXNY2OR`, registros A apex + www → EIP, gestionados en
+`infra/terraform/route53.tf`). HTTPS con Let's Encrypt: cert emitido con
+certbot en el EC2 (`/etc/letsencrypt`, montado read-only en el contenedor
+nginx), renovación automática vía timer de certbot con hooks que paran/
+arrancan nginx. nginx redirige HTTP→HTTPS.
 
 - Imágenes ARM64 en ECR `lerida-comercio` con tags `migration`, `backend`,
   `frontend`, `nginx`. Build local con `docker buildx --platform linux/arm64`.

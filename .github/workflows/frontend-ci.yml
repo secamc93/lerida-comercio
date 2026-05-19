@@ -17,7 +17,7 @@ env:
   AWS_ROLE: arn:aws:iam::334689162817:role/lerida-comercio-github-actions
   ECR_IMAGE: 334689162817.dkr.ecr.us-east-1.amazonaws.com/lerida-comercio
   EC2_HOST: 34.235.36.96
-  PUBLIC_URL: http://ec2-34-235-36-96.compute-1.amazonaws.com
+  PUBLIC_URL: https://leridacomercio.com
 
 jobs:
   test:
