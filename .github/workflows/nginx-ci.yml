@@ -24,9 +24,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Lint nginx.conf
         run: |
+          # Certificado dummy: nginx -t exige que el ssl_certificate exista
+          # (el real vive solo en el EC2).
+          mkdir -p /tmp/le/live/leridacomercio.com
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -keyout /tmp/le/live/leridacomercio.com/privkey.pem \
+            -out /tmp/le/live/leridacomercio.com/fullchain.pem \
+            -subj "/CN=leridacomercio.com"
           # --add-host: nginx -t resuelve los upstreams al testear el config;
           # los nombres de servicio no existen en el runner, los apuntamos a loopback.
-          docker run --rm -v ${{ github.workspace }}/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro \
+          docker run --rm \
+            -v ${{ github.workspace }}/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro \
+            -v /tmp/le:/etc/letsencrypt:ro \
             --add-host back-central:127.0.0.1 --add-host front-central:127.0.0.1 \
             nginx:1.27-alpine nginx -t
 
