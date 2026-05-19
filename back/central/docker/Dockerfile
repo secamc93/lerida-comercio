@@ -1,5 +1,5 @@
 # ===== Stage 1: build =====
-FROM golang:1.22-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 ENV CGO_ENABLED=0 GOOS=linux
 
@@ -7,8 +7,9 @@ RUN apk add --no-cache git
 
 WORKDIR /workspace
 
-# Copia migration primero (replace directive)
+# Copia los módulos referenciados por replace directives
 COPY migration /workspace/migration
+COPY models /workspace/models
 
 WORKDIR /workspace/central
 COPY central/go.mod central/go.sum* ./

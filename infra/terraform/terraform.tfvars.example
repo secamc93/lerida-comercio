@@ -1,0 +1,15 @@
+# Copia este archivo a terraform.tfvars y ajusta los valores si hace falta.
+# Los defaults de variables.tf ya sirven para el entorno actual.
+
+aws_region  = "us-east-1"
+aws_profile = "default"
+project     = "lerida-comercio"
+
+instance_type    = "t4g.small"
+root_volume_size = 20
+key_name         = "lerida-comercio"
+
+# Restringe el SSH a tu IP en producción, p. ej. "190.0.0.0/32"
+ssh_cidr = "0.0.0.0/0"
+
+ecr_image_retention_count = 10
