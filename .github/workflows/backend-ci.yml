@@ -52,11 +52,11 @@ jobs:
 
       - name: Build migration
         working-directory: back/migration
-        run: go build ./...
+        run: go build -o /dev/null ./...
 
       - name: Build central
         working-directory: back/central
-        run: go build ./...
+        run: go build -o /dev/null ./...
 
       - name: Tests central
         working-directory: back/central
